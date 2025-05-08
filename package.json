@@ -1,0 +1,30 @@
+{
+  "name": "jobgenieai",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "tailwind:init": "tailwindcss init -p"
+  },
+  "dependencies": {
+    "@types/html2canvas": "^0.5.35",
+    "@types/recharts": "^1.8.29",
+    "firebase": "^10.8.0",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^3.0.1",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-hot-toast": "^2.5.2",
+    "react-scripts": "^5.0.1",
+    "recharts": "^2.15.3",
+    "typescript": "^5.2.2"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.17",
+    "postcss": "^8.4.35",
+    "tailwindcss": "^3.4.1"
+  }
+}
