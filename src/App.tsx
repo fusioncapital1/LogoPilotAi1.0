@@ -1,88 +1,117 @@
 import React, { useState } from 'react'
-import { auth } from './firebase'
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from 'firebase/auth'
 
 function App() {
-  const [user, setUser] = useState(() => auth.currentUser)
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [isSignUp, setIsSignUp] = useState(false)
+  const [industry, setIndustry] = useState('')
+  const [style, setStyle] = useState('')
+  const [result, setResult] = useState('')
+  const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  auth.onAuthStateChanged((u) => setUser(u))
-
-  const handleAuth = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setLoading(true)
     setError('')
+    setResult('')
+
     try {
-      if (isSignUp) {
-        await createUserWithEmailAndPassword(auth, email, password)
-      } else {
-        await signInWithEmailAndPassword(auth, email, password)
+      const res = await fetch('https://fc18-2601-401-8180-2290-7c02-cc17-14d5-82ff.ngrok-free.app/webhook/LogoPilotAi', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ industry, style }),
+      })
+
+      if (!res.ok) {
+        throw new Error('Failed to generate brand')
       }
-    } catch (err: any) {
-      setError(err.message)
+
+      const data = await res.json()
+      setResult(data.output || 'No result generated')
+    } catch (err) {
+      setError('Failed to generate brand. Please try again.')
+      console.error('Error:', err)
+    } finally {
+      setLoading(false)
     }
   }
 
-  const handleSignOut = async () => {
-    await signOut(auth)
-  }
-
   return (
-    <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #e0e7ff 0%, #fff 100%)', padding: 0, fontFamily: 'Segoe UI, Arial, sans-serif' }}>
-      {/* Mission Statement Banner */}
-      <div style={{ background: '#2563eb', color: '#fff', padding: '22px 0', textAlign: 'center', fontWeight: 800, fontSize: 28, letterSpacing: 1, boxShadow: '0 2px 8px #0002' }}>
-        🚀 LogoPilotAi: Instantly generate unique brands and logos with AI-driven creativity.
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex flex-col items-center p-4">
+      {/* Header */}
+      <div className="w-full max-w-4xl text-center mb-8">
+        <h1 className="text-4xl md:text-5xl font-bold text-indigo-700 mb-4">
+          LogoPilotAi
+        </h1>
+        <p className="text-lg text-gray-600">
+          Generate unique brand names and slogans with AI
+        </p>
       </div>
-      {/* How to Use Section */}
-      <div style={{ background: '#e0e7ff', color: '#222', padding: '14px 0', textAlign: 'center', fontSize: 18, fontWeight: 500, borderBottom: '1px solid #c7d2fe' }}>
-        <span style={{ color: '#2563eb', fontWeight: 700 }}>How to use:</span> Enter your industry and preferred style, and let LogoPilotAi create your brand and slogan!
-      </div>
-      <div style={{ maxWidth: 420, margin: '40px auto', background: '#fff', borderRadius: 20, boxShadow: '0 8px 32px #0002', padding: 36, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <h1 style={{ fontSize: 44, color: '#2563eb', fontWeight: 900, marginBottom: 18, letterSpacing: 1 }}>LogoPilotAi</h1>
-        {!user ? (
-          <form onSubmit={handleAuth} style={{ display: 'flex', flexDirection: 'column', gap: 16, width: '100%' }}>
-            <h2 style={{ fontSize: 22, fontWeight: 800, marginBottom: 8, color: '#2563eb' }}>{isSignUp ? 'Sign Up' : 'Sign In'}</h2>
+
+      {/* Main Form */}
+      <div className="w-full max-w-md">
+        <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-lg p-6 space-y-4">
+          <div>
+            <label htmlFor="industry" className="block text-sm font-medium text-gray-700 mb-1">
+              Industry
+            </label>
             <input
-              type="email"
-              placeholder="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              id="industry"
+              type="text"
+              value={industry}
+              onChange={(e) => setIndustry(e.target.value)}
+              placeholder="e.g., Technology, Fitness, Food"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
               required
-              style={{ padding: 14, borderRadius: 10, border: '1.5px solid #c7d2fe', fontSize: 18 }}
             />
+          </div>
+
+          <div>
+            <label htmlFor="style" className="block text-sm font-medium text-gray-700 mb-1">
+              Style
+            </label>
             <input
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              id="style"
+              type="text"
+              value={style}
+              onChange={(e) => setStyle(e.target.value)}
+              placeholder="e.g., Modern, Classic, Playful"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
               required
-              style={{ padding: 14, borderRadius: 10, border: '1.5px solid #c7d2fe', fontSize: 18 }}
             />
-            {error && <div style={{ color: 'red', fontWeight: 600 }}>{error}</div>}
-            <button type="submit" style={{ background: 'linear-gradient(90deg, #2563eb 60%, #38bdf8 100%)', color: '#fff', padding: '12px 32px', borderRadius: 10, fontWeight: 800, border: 'none', fontSize: 18, cursor: 'pointer' }}>
-              {isSignUp ? 'Sign Up' : 'Sign In'}
-            </button>
-            <button type="button" onClick={() => setIsSignUp(!isSignUp)} style={{ background: '#e5e7eb', color: '#222', padding: '12px 32px', borderRadius: 10, fontWeight: 700, border: 'none', fontSize: 16, cursor: 'pointer' }}>
-              {isSignUp ? 'Already have an account? Sign In' : 'Don\'t have an account? Sign Up'}
-            </button>
-          </form>
-        ) : (
-          <div style={{ textAlign: 'center', width: '100%' }}>
-            <h2 style={{ fontSize: 22, fontWeight: 800, marginBottom: 8, color: '#2563eb' }}>Welcome, {user.email}</h2>
-            <button onClick={handleSignOut} style={{ background: '#ef4444', color: '#fff', padding: '12px 32px', borderRadius: 10, fontWeight: 800, border: 'none', fontSize: 18, cursor: 'pointer' }}>
-              Sign Out
-            </button>
-            <div style={{ marginTop: 32, color: '#222' }}>
-              <h3 style={{ fontWeight: 700 }}>Your Dashboard will go here.</h3>
-              <p>More features coming soon!</p>
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading || !industry || !style}
+            className={`w-full py-3 px-4 rounded-lg text-white font-medium transition-colors
+              ${loading || !industry || !style 
+                ? 'bg-gray-400 cursor-not-allowed' 
+                : 'bg-indigo-600 hover:bg-indigo-700'}`}
+          >
+            {loading ? 'Generating...' : 'Generate Brand'}
+          </button>
+        </form>
+
+        {/* Error Message */}
+        {error && (
+          <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-600">
+            {error}
+          </div>
+        )}
+
+        {/* Result */}
+        {result && (
+          <div className="mt-6 bg-white rounded-xl shadow-lg p-6">
+            <h2 className="text-xl font-semibold text-gray-800 mb-3">Your Brand</h2>
+            <div className="prose prose-indigo">
+              <pre className="whitespace-pre-wrap text-gray-700">{result}</pre>
             </div>
           </div>
         )}
       </div>
-      <footer style={{ textAlign: 'center', marginTop: 40, color: '#9ca3af', fontSize: 16, fontWeight: 500 }}>
-        &copy; {new Date().getFullYear()} LogoPilotAi. All rights reserved.
+
+      {/* Footer */}
+      <footer className="mt-12 text-center text-gray-500 text-sm">
+        © {new Date().getFullYear()} LogoPilotAi. All rights reserved.
       </footer>
     </div>
   )
