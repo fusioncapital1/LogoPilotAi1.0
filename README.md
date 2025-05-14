@@ -26,11 +26,12 @@ LogoPilotAi is an AI-powered branding tool that generates unique brand names and
      OPENAI_API_KEY=sk-...
      LOGOPILOTAI_GEMINI_API_KEY=AIzaSyBmXFeJC8FmU9udqVD9dTI3kXrI2UJ7Y_Q
      REACT_APP_N8N_WEBHOOK=https://fc18-2601-401-8180-2290-7c02-cc17-14d5-82ff.ngrok-free.app/webhook/LogoPilotAi
+     STABILITY_API_KEY=sk-vndON3LhPKuysTkW9tavtWINRofd9xmJ17pgKeKDC... (truncated)
      ```
    - The `.env` file is already in `.gitignore` and will not be committed.
 4. **Start the frontend:**
    ```sh
-   npm start
+   $env:PORT=3001; npm start
    ```
 5. **Set up n8n workflow:**
    - Import or recreate the workflow as described in the documentation.
@@ -65,7 +66,7 @@ MIT
 ## Testing Workflow
 - You can test your workflow by sending a POST request to:
   ```
-  http://localhost:5678/webhook/LogoPilotAi
+  https://36e5-2601-401-8180-2290-f106-e29e-6d3a-e3b.ngrok-free.app/webhook/LogoPilotAi
   ```
   with a body like:
   ```json
@@ -78,12 +79,13 @@ MIT
 ## Updated n8n HTTP Request Node
 - **URL:**
   ```
-  https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro-preview-05-06:generateContent?key=YOUR_API_KEY
+  https://api.stability.ai/v2beta/stable-image/generate/sd3
   ```
 
 - **Method:** POST
 - **Headers:**  
   - Content-Type: application/json
+  - Authorization: Bearer sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 - **Body Content Type:** Raw
 - **Content Type:** JSON
@@ -94,7 +96,7 @@ MIT
       {
         "parts": [
           {
-            "text": "You are a branding expert AI. Generate a short, unique brand name and a one-line slogan for a business in the {{ $json.industry }} industry. The brand should match the following style: {{ $json.style }}."
+            "text": "A modern, professional logo for a {{$json[\"industry\"]}} company called '{{$json[\"output\"]}}'. Slogan: '{{$json[\"slogan\"]}}'"
           }
         ]
       }
@@ -143,13 +145,13 @@ MIT
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    const res = await fetch('https://fc18-2601-401-8180-2290-7c02-cc17-14d5-82ff.ngrok-free.app/webhook/LogoPilotAi', {
+    const res = await fetch('https://36e5-2601-401-8180-2290-f106-e29e-6d3a-e3b.ngrok-free.app/webhook/LogoPilotAi', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ industry, style }),
     });
     const data = await res.json();
-    setResult(data.output);
+    setResult(data.output || 'No result generated');
     setLoading(false);
   };
   ```
@@ -254,13 +256,13 @@ npm install @stripe/stripe-js @stripe/react-stripe-js
 const handleSubmit = async (e) => {
   e.preventDefault();
   setLoading(true);
-  const res = await fetch('https://fc18-2601-401-8180-2290-7c02-cc17-14d5-82ff.ngrok-free.app/webhook/LogoPilotAi', {
+  const res = await fetch('https://36e5-2601-401-8180-2290-f106-e29e-6d3a-e3b.ngrok-free.app/webhook/LogoPilotAi', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ industry, style }),
   });
   const data = await res.json();
-  setResult(data.output);
+  setResult(data.output || 'No result generated');
   setLoading(false);
 };
 ```
@@ -336,13 +338,13 @@ export default function App() {
     e.preventDefault();
     setLoading(true);
     setResult("");
-    const res = await fetch("https://fc18-2601-401-8180-2290-7c02-cc17-14d5-82ff.ngrok-free.app/webhook/LogoPilotAi", {
+    const res = await fetch("https://36e5-2601-401-8180-2290-f106-e29e-6d3a-e3b.ngrok-free.app/webhook/LogoPilotAi", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ industry, style }),
     });
     const data = await res.json();
-    setResult(data.output);
+    setResult(data.output || 'No result generated');
     setLoading(false);
   };
 
@@ -380,7 +382,10 @@ export default function App() {
       </form>
       {result && (
         <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4 mt-6 w-full max-w-md shadow">
-          <pre className="whitespace-pre-wrap text-gray-800">{result}</pre>
+          <div>
+            <pre>{result.output}</pre>
+            {result.image_url && <img src={result.image_url} alt="Generated Logo" />}
+          </div>
         </div>
       )}
     </div>
@@ -424,7 +429,7 @@ npm install -g ngrok
 
 ngrok http 5678 
 
-Forwarding    https://abcd1234.ngrok.io -> http://localhost:5678 
+Forwarding    https://36e5-2601-401-8180-2290-f106-e29e-6d3a-e3b.ngrok-free.app -> http://localhost:5678 
 
 http://localhost:4040 
 
@@ -432,7 +437,7 @@ ngrok config add-authtoken 2wtCL7b2wD4PLM12WJvXVXesT49_7ofBAkNedYojMBuFYjaBS
 
 type %USERPROFILE%\.ngrok2\ngrok.yml 
 
-https://fc18-2601-401-8180-2290-7c02-cc17-14d5-82ff.ngrok-free.app/webhook/LogoPilotAi 
+https://36e5-2601-401-8180-2290-f106-e29e-6d3a-e3b.ngrok-free.app/webhook/LogoPilotAi 
 
 git remote -v 
 
@@ -459,3 +464,19 @@ del package-lock.json
 npx tsc --version 
 
 legacy-peer-deps=true 
+
+set PORT=3001
+npm start 
+
+https://api.stability.ai/v2beta/stable-image/generate/sd3 
+
+{
+  "prompt": "A modern, professional logo for a {{$json["industry"]}} company called '{{$json["output"]}}'. Slogan: '{{$json["slogan"]}}'",
+  "output_format": "png"
+} 
+
+curl -X POST "https://36e5-2601-401-8180-2290-f106-e29e-6d3a-e3b.ngrok-free.app/webhook/LogoPilotAi" -H "Content-Type: application/json" -d "{\"industry\":\"technology\",\"style\":\"modern\"}" 
+
+pm2 start "ngrok http 5678" --name ngrok
+pm2 save
+pm2 startup 
