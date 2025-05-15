@@ -3,17 +3,27 @@ import { useState } from "react";
 export default function LogoPilotAi() {
   const [industry, setIndustry] = useState("");
   const [style, setStyle] = useState("");
-  const [result, setResult] = useState("");
+  const [result, setResult] = useState<{ output?: string; slogan?: string; image_url?: string } | null>(null);
 
   const handleGenerate = async () => {
-    const res = await fetch("https://your-n8n-endpoint.com/webhook", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ industry, style }),
-    });
+    try {
+      const res = await fetch("http://localhost:5678/webhook/LogoPilotAi", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ industry, style }),
+      });
 
-    const data = await res.json();
-    setResult(data.output || "Something went wrong.");
+      if (!res.ok) {
+        const errorText = await res.text();
+        setResult({ output: "Failed to generate brand.", slogan: errorText });
+        return;
+      }
+
+      const data = await res.json();
+      setResult(data);
+    } catch (err) {
+      setResult({ output: "Failed to generate brand. Please try again.", slogan: String(err) });
+    }
   };
 
   return (
@@ -40,8 +50,12 @@ export default function LogoPilotAi() {
       </button>
 
       {result && (
-        <div className="bg-gray-100 p-4 mt-4 rounded shadow">
-          <pre>{result}</pre>
+        <div className="bg-gray-100 p-4 mt-4 rounded shadow flex flex-col items-center">
+          <div className="font-bold text-lg mb-2">{result.output}</div>
+          {result.slogan && <div className="italic text-gray-700 mb-2">{result.slogan}</div>}
+          {result.image_url && (
+            <img src={result.image_url} alt="Generated Logo" className="mt-2 max-h-48 object-contain" />
+          )}
         </div>
       )}
     </div>
